@@ -53,15 +53,30 @@ namespace MVC_Tutorial_04.Controllers
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("CUserId,CUserName,CUserAccout,CUserPassword,CUserMail,CCreatorId,CCreatorDt")] TblUser tblUser)
+        public async Task<IActionResult> Create(CreateUserViewModel model)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                _context.Add(tblUser);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                model.ErrorMessage = "Model validation failed";
+                return View(model);
             }
-            return View(tblUser);
+            if (model.UserPassword != model.ComfirmPassword)
+            {
+                model.ErrorMessage = "Password and confirm password not match";
+                return View(model);
+            }
+
+            _context.TblUser.Add(new TblUser()
+            {
+                CCreatorDt = DateTime.Now,
+                CCreatorId = 0,
+                CUserAccout = model.UserAccout,
+                CUserMail = model.UserMail,
+                CUserName = model.UserName,
+                CUserPassword = model.ComfirmPassword
+            });
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: TblUsers/Edit/5
